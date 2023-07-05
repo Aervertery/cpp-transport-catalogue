@@ -1,81 +1,69 @@
 #pragma once
-#include <algorithm>
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <string_view>
 #include <vector>
-#include <deque>
-#include <unordered_set>
+#include <string>
 #include <iomanip>
+#include <utility>
+#include <fstream>
 
-namespace stat_read {
+namespace transportcatalogue {
+	namespace stat_read {
 
-	enum class RequestType {
-		BUS,
-		STOP,
-	};
+		enum class RequestType {
+			BUS,
+			STOP,
+		};
 
-	struct Request {
-		Request(RequestType type_, std::string& text_);
+		struct Request {
+			Request(RequestType type_, std::string& text_);
 
-		RequestType type;
-		std::string text;
-	};
+			RequestType type;
+			std::string text;
+		};
 
-	struct ReplyBus {
+		struct ReplyBus {
+			std::string name;
+			int stops;
+			size_t unique_stops;
+			double length;
+			double curvature;
+			bool isFound;
+		};
 
-		std::string name;
-		int stops;
-		size_t unique_stops;
-		double length;
-		double curvature;
-	};
+		struct ReplyStop {
+			std::string name;
+			std::vector<std::string_view> buses;
+			bool isFound;
+		};
 
-	struct ReplyStop {
+		struct Reply {
+			RequestType type;
+			ReplyBus rep1;
+			ReplyStop rep2;
+		};
 
-		std::string name;
-		std::vector<std::string_view> buses;
-		bool isFound;
-	};
+		class Requests {
+		public:
+			const std::vector<Request>& GetRequests() const;
 
-	struct Reply {
-		RequestType type;
-		ReplyBus rep1;
-		ReplyStop rep2;
-	};
+			const std::vector<Reply>& GetReplies() const;
 
-	class Requests {
-	public:
-		const std::vector<Request>& GetRequests() const;
+			void AddRequest(RequestType type, std::string& text);
 
-		const std::vector<ReplyBus>& GetRepliesBus() const;
+			void AddReply(RequestType type, ReplyBus& rep1, ReplyStop& rep2);
 
-		const std::vector<ReplyStop>& GetRepliesStop() const;
+			void Load(std::istream& input);
 
-		const std::vector<Reply>& GetReplies() const;
+			void Print();
 
-		void AddRequest(RequestType type, std::string& text);
+			void PrintBus(ReplyBus& reply, std::ofstream& output);
 
-		void AddReply(std::string& name, int stops, size_t uniques, double length, double curvature);
+			void PrintStop(ReplyStop& reply, std::ofstream& output);
 
-		void AddReply(std::string& name, std::vector<std::string_view>& buses, bool isFound);
+		private:
+			std::vector<Request> requests;
+			std::vector<Reply> replies;
 
-		void AddReply(RequestType type, ReplyBus& rep1, ReplyStop& rep2);
-
-		void Load(std::istream& input);
-
-		void Print();
-
-		void PrintBus(ReplyBus& reply, std::ofstream& output);
-
-		void PrintStop(ReplyStop& reply, std::ofstream& output);
-
-	private:
-		std::vector<Request> requests;
-		std::vector<ReplyBus> replies_bus;
-		std::vector<ReplyStop> replies_stop;
-		std::vector<Reply> replies;
-		
-	};
+		};
+	}
 }

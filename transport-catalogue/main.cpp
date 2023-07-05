@@ -1,14 +1,14 @@
-//#include "transport_catalogue.h"
+#include "transport_catalogue.h"
 #include "tests.h"
 
 int main() {
 	//TestTransportCatalogue();
-	input::Requests inp;
-	stat_read::Requests stats;
+	transportcatalogue::input::Requests inp;
+	transportcatalogue::stat_read::Requests stats;
 	std::ifstream input("tsC_case1_input.txt");
 	inp.Load(input);
 	stats.Load(input);
-	TransportCatalogue tc;
+	transportcatalogue::TransportCatalogue tc;
 	tc.ProcessInput(inp);
 	tc.ProcessStats(stats);
 	stats.Print();
