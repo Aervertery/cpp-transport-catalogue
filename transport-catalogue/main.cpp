@@ -1,4 +1,5 @@
-#include "transport_catalogue.h"
+#include "input_reader.h"
+#include "stat_reader.h"
 
 int main() {
 	transportcatalogue::input::Requests inp;
@@ -7,8 +8,7 @@ int main() {
 	inp.Load(input);
 	stats.Load(input);
 	transportcatalogue::TransportCatalogue tc;
-	tc.ProcessInput(inp);
-	tc.ProcessStats(stats);
-	stats.Print();
+	inp.ProcessRequests(tc);
+	stats.ProcessRequests(tc);
 	return 0;
 }

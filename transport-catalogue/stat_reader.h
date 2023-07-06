@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <utility>
 #include <fstream>
+#include "transport_catalogue.h"
 
 namespace transportcatalogue {
 	namespace stat_read {
@@ -21,48 +22,22 @@ namespace transportcatalogue {
 			std::string text;
 		};
 
-		struct ReplyBus {
-			std::string name;
-			int stops;
-			size_t unique_stops;
-			double length;
-			double curvature;
-			bool isFound;
-		};
-
-		struct ReplyStop {
-			std::string name;
-			std::vector<std::string_view> buses;
-			bool isFound;
-		};
-
-		struct Reply {
-			RequestType type;
-			ReplyBus rep1;
-			ReplyStop rep2;
-		};
-
 		class Requests {
 		public:
 			const std::vector<Request>& GetRequests() const;
 
-			const std::vector<Reply>& GetReplies() const;
-
 			void AddRequest(RequestType type, std::string& text);
-
-			void AddReply(RequestType type, ReplyBus& rep1, ReplyStop& rep2);
 
 			void Load(std::istream& input);
 
-			void Print();
+			void PrintBus(Bus& reply, std::ofstream& output);
 
-			void PrintBus(ReplyBus& reply, std::ofstream& output);
+			void PrintStop(Stop& reply, std::ofstream& output);
 
-			void PrintStop(ReplyStop& reply, std::ofstream& output);
+			void ProcessRequests(TransportCatalogue& catalogue);
 
 		private:
 			std::vector<Request> requests;
-			std::vector<Reply> replies;
 
 		};
 	}

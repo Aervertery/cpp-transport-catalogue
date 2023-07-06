@@ -1,25 +1,61 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 #include <deque>
 #include <cstdint>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
-#include "input_reader.h"
-#include "stat_reader.h"
 #include "geo.h"
 
 namespace transportcatalogue {
 
-using BusStops = std::pair<std::vector<std::string>, bool>;
-using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::pair<std::string, int>>>;
+	using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::pair<std::string, int>>>;
+
+	namespace input {
+		struct Stop {
+			std::string name;
+			geo::Coordinates coordinates;
+			std::vector<std::pair<std::string, int>> distances;
+		};
+
+		struct Bus {
+			std::string name;
+			std::vector<std::string> stops;
+			bool IsCircle;
+		};
+	}
+
+	namespace stat_read {
+		struct Bus {
+			std::string name;
+			int stops;
+			size_t unique_stops;
+			double length;
+			double curvature;
+			bool isFound;
+		};
+
+		struct Stop {
+			std::string name;
+			std::vector<std::string_view> buses;
+			bool isFound;
+		};
+	}
 
 	class TransportCatalogue {
 	public:
-		void ProcessInput(input::Requests& requests);
 
-		void ProcessStats(stat_read::Requests& requests);
+		void AddStop(const input::Stop& stop);
+
+		void AddBus(const input::Bus& bus);
+
+		void ProcessDistances();
+
+		stat_read::Bus GetBusInfo(std::string& name);
+
+		stat_read::Stop GetStopInfo(std::string& name);
 
 	private:
 
@@ -27,6 +63,13 @@ using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::
 			std::string name;
 			geo::Coordinates coordinates;
 		};
+
+		struct Bus {
+			std::string name;
+			std::vector<Stop*> stops;
+			bool IsCircle;
+		};
+
 
 		struct StopDistHasher {
 			size_t operator() (std::pair<Stop*, Stop*> stops) const {
@@ -36,12 +79,6 @@ using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::
 			}
 		};
 
-		struct Bus {
-			std::string name;
-			std::vector<Stop*> stops;
-			double distance;
-			bool IsCircle;
-		};
 		using StopsDistance = std::unordered_map<std::pair<Stop*, Stop*>, int, StopDistHasher>;
 
 		std::deque<Stop> stops;
@@ -51,25 +88,11 @@ using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::
 		StopsDistance stops_to_distance;
 		DistancesForStops distances;
 
-		void AddStop(std::string& text);
+		Stop* GetStop(const std::string& name);
 
-		void AddBus(std::string& text);
+		Bus* GetBus(const std::string& name);
 
-		double ComputeRouteLength(std::string& name);
-
-		void ProcessDistances();
-
-		void ComputeDistance(Stop* from, Stop* to);
+		std::pair<double, double> ComputeRouteLength(std::string& name);
 
 	};
-	
-	namespace detail {
-
-		std::pair<std::string, std::string> SplitNameText(std::string&& line);
-
-		geo::Coordinates ParseCoordinates(std::string&& line);
-
-		BusStops ParseStops(std::string&& line);
-	}
-
 }

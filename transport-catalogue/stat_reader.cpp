@@ -10,17 +10,9 @@ namespace transportcatalogue {
 			return requests;
 		}
 
-		const std::vector<Reply>& Requests::GetReplies() const {
-			return replies;
-		}
-
 		void Requests::AddRequest(RequestType type, std::string& text) {
 			requests.push_back({ type, text });
 			return;
-		}
-
-		void Requests::AddReply(RequestType type, ReplyBus& rep1, ReplyStop& rep2) {
-			replies.push_back({ type, rep1, rep2 });
 		}
 
 		void Requests::Load(std::istream& input) {
@@ -60,21 +52,7 @@ namespace transportcatalogue {
 			}
 		}
 
-		void Requests::Print() {
-			std::ofstream output("test4_out.txt");
-			for (auto& reply : replies) {
-				switch (reply.type) {
-				case RequestType::BUS:
-					PrintBus(reply.rep1, output);
-					continue;
-				case RequestType::STOP:
-					PrintStop(reply.rep2, output);
-					continue;
-				}
-			}
-		}
-
-		void Requests::PrintBus(ReplyBus& reply, std::ofstream& output) {
+		void Requests::PrintBus(Bus& reply, std::ofstream& output) {
 			const auto default_precision{ std::cout.precision() };
 			if (!reply.isFound) {
 				output << "Bus " << reply.name << ": not found" << std::endl;
@@ -84,7 +62,7 @@ namespace transportcatalogue {
 			output << std::setprecision(default_precision);
 		}
 
-		void Requests::PrintStop(ReplyStop& reply, std::ofstream& output) {
+		void Requests::PrintStop(Stop& reply, std::ofstream& output) {
 			output << "Stop " << reply.name << ": ";
 			if (!reply.isFound) {
 				output << "not found" << std::endl;
@@ -100,6 +78,22 @@ namespace transportcatalogue {
 					output << " " << bus;
 				}
 				output << std::endl;
+			}
+		}
+
+		void Requests::ProcessRequests(TransportCatalogue& catalogue) {
+			std::ofstream output("test4_out.txt");
+			for (auto& request : requests) {
+				switch (request.type) {
+				case stat_read::RequestType::STOP: {
+					Stop stop = catalogue.GetStopInfo(request.text);
+					PrintStop(stop, output);
+					continue; }
+				case stat_read::RequestType::BUS: {
+					Bus bus = catalogue.GetBusInfo(request.text);
+					PrintBus(bus, output);
+					continue; }
+				}
 			}
 		}
 	}
