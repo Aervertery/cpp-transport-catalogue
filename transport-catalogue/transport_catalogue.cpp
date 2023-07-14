@@ -64,17 +64,14 @@ namespace transportcatalogue {
 		return rep1;
 	}
 
-	std::vector<std::string_view> TransportCatalogue::GetDrawableBuses() const {
+	std::set<std::string_view> TransportCatalogue::GetDrawableBuses() const {
 		std::set<std::string_view> result;
-		std::vector<std::string_view> res;
 		for (auto& bus : busname_to_bus) {
 			if (!bus.second->stops.empty()) {
 				result.insert(bus.first);
-				res.push_back(bus.first);
 			}
 		}
-		std::sort(res.begin(), res.end());
-		return res;
+		return result;
 	}
 
 	std::vector<geo::Coordinates> TransportCatalogue::GetStopsCoordinates(std::string_view bus_name) const {

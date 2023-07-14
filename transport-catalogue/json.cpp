@@ -183,6 +183,8 @@ namespace json {
                         // код ниже попробует преобразовать строку в double
                     }
                 }
+                //это нужно, чтобы символом-разделителем целой и дробной части
+                //считалась точка, а не запятая
                 //const std::string oldLocale = std::setlocale(LC_NUMERIC, nullptr);
                 //std::setlocale(LC_NUMERIC, "C");
                 double res = std::stod(parsed_num);
@@ -195,7 +197,6 @@ namespace json {
         }
 
         // Считывает содержимое строкового литерала JSON-документа
-        // Функцию следует использовать после считывания открывающего символа ":
         std::string LoadString(std::istream& input) {
             using namespace std::literals;
 
@@ -482,8 +483,6 @@ namespace json {
         (void)&output;
         PrintContext ctx{ output };
         PrintNode(doc.GetRoot(), ctx);
-
-        // Реализуйте функцию самостоятельно
     }
 
     void PrintValue(std::nullptr_t, const PrintContext& ctx) {
@@ -502,14 +501,37 @@ namespace json {
     void PrintValue(const Array& array, const PrintContext& ctx) {
         bool check_first = true;
         ctx.out << "["sv;
+        auto it = array.begin();
+        auto r = *it;
+        if (r.IsArray() || r.IsMap()) {
+            ctx.out << std::endl;
+            ctx.PrintIndent();
+        }
         for (auto& elem : array) {
             if (check_first) {
-                PrintNode(elem, ctx);
+                if (r.IsArray() || r.IsMap()) {
+                    ctx.PrintIndent();
+                    PrintNode(elem, ctx.Indented());
+                }
+                else {
+                    PrintNode(elem, ctx);
+                }
                 check_first = false;
                 continue;
             }
             ctx.out << ", "sv;
-            PrintNode(elem, ctx);
+            if (r.IsArray() || r.IsMap()) {
+                ctx.out << std::endl;
+                ctx.Indented().PrintIndent();
+                PrintNode(elem, ctx.Indented());
+            }
+            else {
+                PrintNode(elem, ctx);
+            }
+        }
+        if (r.IsArray() || r.IsMap()) {
+            ctx.out << std::endl;
+            ctx.PrintIndent();
         }
         ctx.out << "]"sv;
     }
@@ -517,25 +539,34 @@ namespace json {
     void PrintValue(const Dict& dict, const PrintContext& ctx) {
         bool check_first = true;
         ctx.out << "{"sv;
+        if (dict.size() > 1) {
+            ctx.out << std::endl;
+            ctx.Indented().PrintIndent();
+        }
         for (auto& elem : dict) {
             if (check_first) {
                 check_first = false;
                 PrintNode(elem.first, ctx);
                 ctx.out << ": "sv;
-                PrintNode(elem.second, ctx);
+                PrintNode(elem.second, ctx.Indented());
                 continue;
             }
-            ctx.out << ", "sv;
+            ctx.out << ", "sv << std::endl;
+            ctx.Indented().PrintIndent();
             PrintNode(elem.first, ctx);
             ctx.out << ": "sv;
-            PrintNode(elem.second, ctx);
+            PrintNode(elem.second, ctx.Indented());
+        }
+        if (dict.size() > 1) {
+            ctx.out << std::endl;
+            ctx.PrintIndent();
         }
         ctx.out << "}"sv;
     }
 
     void PrintNode(const Node& node, const PrintContext& ctx) {
         std::visit(
-            [&ctx](const auto& value) { PrintValue(value, ctx.Indented()); ctx.PrintIndent();  },
+            [&ctx](const auto& value) { PrintValue(value, ctx); },
             node.GetValue());
     }
 

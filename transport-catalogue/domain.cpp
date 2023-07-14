@@ -1,14 +1,44 @@
 #include "domain.h"
 
-/*
- * В этом файле вы можете разместить классы/структуры, которые являются частью предметной области
- * (domain) вашего приложения и не зависят от транспортного справочника. Например Автобусные
- * маршруты и Остановки.
- *
- * Их можно было бы разместить и в transport_catalogue.h, однако вынесение их в отдельный
- * заголовочный файл может оказаться полезным, когда дело дойдёт до визуализации карты маршрутов:
- * визуализатор карты (map_renderer) можно будет сделать независящим от транспортного справочника.
- *
- * Если структура вашего приложения не позволяет так сделать, просто оставьте этот файл пустым.
- *
- */
+namespace svg {
+
+	Rgb::Rgb(uint8_t rd, uint8_t grn, uint8_t bl) :
+		red(rd),
+		green(grn),
+		blue(bl) {}
+
+	Rgba::Rgba(uint8_t rd, uint8_t grn, uint8_t bl, double opcty) :
+		red(rd),
+		green(grn),
+		blue(bl),
+		opacity(opcty) {}
+
+	Point::Point(double x, double y) : 
+		x(x),
+		y(y) {}
+} //namespace svg
+
+namespace transportcatalogue {
+
+	namespace json_reader {
+		namespace input {
+
+			Object::Object(std::string name) :
+				name_(name) {}
+
+			Stop::Stop(std::string name, geo::Coordinates coordinates, std::vector<std::pair<std::string, int>> distances) :
+				Object(name),
+				coordinates_(coordinates),
+				distances_(distances) {}
+
+			Bus::Bus(std::string name, std::vector<std::string> stops, bool IsCircle) :
+				Object(name),
+				stops_(stops),
+				IsCircle_(IsCircle) {}
+		} //namespace input
+
+		namespace stat_read {
+
+		} //namespace stat_read
+	} //namespace json_reader
+} //namespace transportcatalogue

@@ -1,13 +1,5 @@
 #include "request_handler.h"
 
-/*
- * Здесь можно было бы разместить код обработчика запросов к базе, содержащего логику, которую не
- * хотелось бы помещать ни в transport_catalogue, ни в json reader.
- *
- * Если вы затрудняетесь выбрать, что можно было бы поместить в этот файл,
- * можете оставить его пустым.
- */
-
 RequestHandler::RequestHandler(const transportcatalogue::TransportCatalogue& db, const renderer::MapRenderer& renderer) :
 	db_(db),
 	renderer_(renderer) {}
@@ -83,13 +75,11 @@ svg::Document RequestHandler::RenderMap() const {
 		svg_coords.push_back(crds);
 	}
 
-	//добавляем маршруты
 	size_t color_count = 0;
 	auto bus_it = buses.begin();
 	std::set<renderer::ObjectData, std::less<renderer::ObjectData>> _stop_marks;
 	std::set<renderer::ObjectData, std::less<renderer::ObjectData>> _stop_names;
 	std::vector<std::pair<renderer::ObjectData, size_t>> _bus_names;
-	// 2hKHo5
 	for (auto& line : svg_coords) {
 		svg::Polyline line_;
 		std::string name(*bus_it);
@@ -156,7 +146,5 @@ svg::Document RequestHandler::RenderMap() const {
 		doc.Add(renderer_.DrawStopNameUnderlayer(t));
 		doc.Add(renderer_.DrawStopName(t));
 	}
-	//std::ostringstream str;
-	//doc.Render(str);
 	return doc;
 }

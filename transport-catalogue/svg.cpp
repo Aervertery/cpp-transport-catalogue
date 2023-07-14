@@ -4,17 +4,6 @@ namespace svg {
 
     using namespace std::literals;
 
-    Rgb::Rgb(uint8_t rd, uint8_t grn, uint8_t bl) :
-        red(rd),
-        green(grn),
-        blue(bl) {}
-
-    Rgba::Rgba(uint8_t rd, uint8_t grn, uint8_t bl, double opcty) :
-        red(rd),
-        green(grn),
-        blue(bl),
-        opacity(opcty) {}
-
     void ColorPrinter::operator() (const std::monostate) {
         out_ << NoneColor;
     }
@@ -30,6 +19,20 @@ namespace svg {
     void ColorPrinter::operator() (const Rgba rgba) {
         out_ << "rgba("sv << static_cast<int>(rgba.red) << ","sv << static_cast<int>(rgba.green) << "," << static_cast<int>(rgba.blue) << "," << rgba.opacity << ")"sv;
     }
+
+    // ------------------ RenderContext ----------------------
+
+    RenderContext RenderContext::Indented() const {
+        return { out, indent_step, indent + indent_step };
+    }
+
+    void RenderContext::RenderIndent() const {
+        for (int i = 0; i < indent; ++i) {
+            out.put(' ');
+        }
+    }
+
+    // --------------------- Object -----------------------
 
     void Object::Render(const RenderContext& context) const {
         context.RenderIndent();

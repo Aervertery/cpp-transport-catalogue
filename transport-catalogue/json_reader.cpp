@@ -1,10 +1,5 @@
 #include "json_reader.h"
 
-/*
- * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
- * а также код обработки запросов к базе и формирование массива ответов в формате JSON
- */
-
 namespace transportcatalogue {
 	namespace json_reader {
 		namespace input {

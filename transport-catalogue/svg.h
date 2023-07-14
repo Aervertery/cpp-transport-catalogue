@@ -12,38 +12,6 @@
 #include "domain.h"
 
 namespace svg {
-
-    /*struct Rgb {
-        Rgb() = default;
-
-        Rgb(uint8_t rd, uint8_t grn, uint8_t bl);
-
-        uint8_t red = 0;
-        uint8_t green = 0;
-        uint8_t blue = 0;
-    };
-
-    struct Rgba {
-        Rgba() = default;
-
-        Rgba(uint8_t rd, uint8_t grn, uint8_t bl, double opcty);
-
-        uint8_t red = 0;
-        uint8_t green = 0;
-        uint8_t blue = 0;
-        double opacity = 1.0;
-    };
-
-    struct Point {
-        Point() = default;
-        Point(double x, double y)
-            : x(x)
-            , y(y) {
-        }
-        double x = 0;
-        double y = 0;
-    };*/
-
     enum class StrokeLineCap {
         BUTT,
         ROUND,
@@ -126,15 +94,9 @@ namespace svg {
             , indent(indent) {
         }
 
-        RenderContext Indented() const {
-            return { out, indent_step, indent + indent_step };
-        }
+        RenderContext Indented() const;
 
-        void RenderIndent() const {
-            for (int i = 0; i < indent; ++i) {
-                out.put(' ');
-            }
-        }
+        void RenderIndent() const;
 
         std::ostream& out;
         int indent_step = 0;
@@ -166,9 +128,6 @@ namespace svg {
 
     protected:
         virtual void AddPtr(std::unique_ptr<Object>&& obj) = 0;
-
-    private:
-        //std::vector<std::unique_ptr<Object>> objects_;
     };
 
     class Drawable {
@@ -269,10 +228,6 @@ namespace svg {
         // Добавляет очередную вершину к ломаной линии
         Polyline& AddPoint(Point point);
 
-        /*
-         * Прочие методы и данные, необходимые для реализации элемента <polyline>
-         */
-
     private:
         std::vector<Point> points_;
 
@@ -303,8 +258,6 @@ namespace svg {
         // Задаёт текстовое содержимое объекта (отображается внутри тега text)
         Text& SetData(std::string data);
 
-        // Прочие данные и методы, необходимые для реализации элемента <text>
-
     private:
         Point pos_ = { 0.0, 0.0 };
         Point offset_ = { 0.0, 0.0 };
@@ -324,16 +277,11 @@ namespace svg {
 
         Document() = default;
 
-        //template <typename ObjectType>
-        //void Add(const ObjectType& object);
-
         // Добавляет в svg-документ объект-наследник svg::Object
         void AddPtr(std::unique_ptr<Object>&& obj) override;
 
         // Выводит в ostream svg-представление документа
         void Render(std::ostream& out) const;
-
-        // Прочие методы и данные, необходимые для реализации класса Document
 
     private:
         std::vector<std::unique_ptr<Object>> objects_;

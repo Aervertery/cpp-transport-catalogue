@@ -1,32 +1,27 @@
 #include "map_renderer.h"
 
-/*
- * В этом файле вы можете разместить код, отвечающий за визуализацию карты маршрутов в формате SVG.
- * Визуализация маршрутов вам понадобится во второй части итогового проекта.
- * Пока можете оставить файл пустым.
- */
-
 namespace renderer {
 
 	bool operator<(const ObjectData& lhs, const ObjectData& rhs) {
-		//return lhs.name_ < rhs.name_;
-		return std::lexicographical_compare(lhs.name_.begin(), lhs.name_.end(), rhs.name_.begin(), rhs.name_.end());
+		return lhs.name_ < rhs.name_;
 	}
 
-	MapRenderer::MapRenderer(transportcatalogue::json_reader::input::RenderSettings settings, std::ostream& output) :
-		settings_(std::move(settings)),
-		output_(output) {}
+	MapRenderer::MapRenderer(transportcatalogue::json_reader::input::RenderSettings settings) :
+		settings_(std::move(settings)) {}
 
 	const transportcatalogue::json_reader::input::RenderSettings& MapRenderer::GetSettings() const {
 		return settings_;
 	}
 
-	std::ostream& MapRenderer::GetOutput() const {
-		return output_;
-	}
-
 	bool IsZero(double value) {
 		return std::abs(value) < EPSILON;
+	}
+
+	svg::Point SphereProjector::operator()(transportcatalogue::geo::Coordinates coords) const {
+		return {
+			(coords.lng - min_lon_) * zoom_coeff_ + padding_,
+			(max_lat_ - coords.lat) * zoom_coeff_ + padding_
+		};
 	}
 
 	svg::Circle MapRenderer::DrawStopMark(ObjectData& data) const {

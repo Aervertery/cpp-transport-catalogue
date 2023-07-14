@@ -4,18 +4,6 @@
 #include <variant>
 #include "geo.h"
 
-/*
- * В этом файле вы можете разместить классы/структуры, которые являются частью предметной области (domain)
- * вашего приложения и не зависят от транспортного справочника. Например Автобусные маршруты и Остановки.
- *
- * Их можно было бы разместить и в transport_catalogue.h, однако вынесение их в отдельный
- * заголовочный файл может оказаться полезным, когда дело дойдёт до визуализации карты маршрутов:
- * визуализатор карты (map_renderer) можно будет сделать независящим от транспортного справочника.
- *
- * Если структура вашего приложения не позволяет так сделать, просто оставьте этот файл пустым.
- *
- */
-
 namespace svg {
 
 	struct Rgb {
@@ -41,10 +29,7 @@ namespace svg {
 
 	struct Point {
 		Point() = default;
-		Point(double x, double y)
-			: x(x)
-			, y(y) {
-		}
+		Point(double x, double y);
 		double x = 0;
 		double y = 0;
 	};
@@ -60,29 +45,20 @@ namespace transportcatalogue {
 		namespace input {
 
 			struct Object {
-				Object(std::string name) :
-					name_(name) {}
+				Object(std::string name);
 				std::string name_;
 			};
 
 			struct Stop : public Object {
-				Stop(std::string name, geo::Coordinates coordinates, std::vector<std::pair<std::string, int>> distances) :
-					Object(name),
-					coordinates_(coordinates),
-					distances_(distances) {}
+				Stop(std::string name, geo::Coordinates coordinates, std::vector<std::pair<std::string, int>> distances);
 
-				//std::string name_;
 				geo::Coordinates coordinates_;
 				std::vector<std::pair<std::string, int>> distances_;
 			};
 
 			struct Bus : public Object {
-				Bus(std::string name, std::vector<std::string> stops, bool IsCircle) :
-					Object(name),
-					stops_(stops),
-					IsCircle_(IsCircle) {}
+				Bus(std::string name, std::vector<std::string> stops, bool IsCircle);
 
-				//std::string name_;
 				std::vector<std::string> stops_;
 				bool IsCircle_;
 			};

@@ -10,7 +10,7 @@
 namespace json {
 
     class Node;
-    // Сохраните объявления Dict и Array без изменения
+
     using Dict = std::map<std::string, Node>;
     using Array = std::vector<Node>;
     using Number = std::variant<int, double>;
@@ -25,14 +25,6 @@ namespace json {
 
     class Node : Value {
     public:
-        /* Реализуйте Node, используя std::variant */
-
-        /*Node() = default;
-
-        template<typename Type>
-        Node(Type value) :
-            value_(std::move(value)) {}*/
-
         const Value& GetValue() const;
 
         using variant::variant;

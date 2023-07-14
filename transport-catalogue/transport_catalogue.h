@@ -27,7 +27,7 @@ namespace transportcatalogue {
 
 		json_reader::stat_read::Stop GetStopInfo(std::string& name) const;
 
-		std::vector<std::string_view> GetDrawableBuses() const;
+		std::set<std::string_view> GetDrawableBuses() const;
 
 		std::vector<geo::Coordinates> GetStopsCoordinates(std::string_view bus_name) const;
 
