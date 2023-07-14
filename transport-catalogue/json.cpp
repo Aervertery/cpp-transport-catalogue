@@ -183,7 +183,11 @@ namespace json {
                         // код ниже попробует преобразовать строку в double
                     }
                 }
-                return std::stod(parsed_num);
+                //const std::string oldLocale = std::setlocale(LC_NUMERIC, nullptr);
+                //std::setlocale(LC_NUMERIC, "C");
+                double res = std::stod(parsed_num);
+                //std::setlocale(LC_NUMERIC, oldLocale.c_str());
+                return res;
             }
             catch (...) {
                 throw ParsingError("Failed to convert "s + parsed_num + " to number"s);
@@ -295,7 +299,7 @@ namespace json {
 
             char c;
             while (input.get(c) && c != ',') {
-                if (c == ' ' || c == '\\' || c == '\t' || c == '\n' || c == '\r') {
+                if (c == ' ' || c == '\\' || c == '\t' || c == '\n' || c == '\r' || c == '}' || c == ']') {
                     break;
                 }
                 value += c;
@@ -531,7 +535,7 @@ namespace json {
 
     void PrintNode(const Node& node, const PrintContext& ctx) {
         std::visit(
-            [&ctx](const auto& value) { ctx.PrintIndent(); ctx.Indented();  PrintValue(value, ctx); },
+            [&ctx](const auto& value) { PrintValue(value, ctx.Indented()); ctx.PrintIndent();  },
             node.GetValue());
     }
 

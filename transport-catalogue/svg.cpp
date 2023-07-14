@@ -55,7 +55,7 @@ namespace svg {
     void Circle::RenderObject(const RenderContext& context) const {
         auto& out = context.out;
         out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
-        out << "r=\""sv << radius_ << "\" "sv;
+        out << "r=\""sv << radius_ << "\""sv;
         RenderAttrs(out);
         out << "/>"sv;
     }
@@ -75,7 +75,7 @@ namespace svg {
             out << it->x << "," << it->y << " ";
         }
         out << points_.rbegin()->x << "," << points_.rbegin()->y;
-        out << "\" ";
+        out << "\"";
         RenderAttrs(out);
         out << "/>";
     }
@@ -124,12 +124,12 @@ namespace svg {
         RenderAttrs(out);
         out << " x=\"" << pos_.x << "\" y=\"" << pos_.y << "\" ";
         out << "dx=\"" << offset_.x << "\" dy=\"" << offset_.y << "\" ";
-        out << "font-size=\"" << font_size_ << "\" ";
+        out << "font-size=\"" << font_size_ << "\"";
         if (!font_family_.empty()) {
-            out << "font-family=\"" << font_family_ << "\" ";
+            out << " font-family=\"" << font_family_ << "\"";
         }
         if (!font_weight_.empty()) {
-            out << "font-weight=\"" << font_weight_ << "\"";
+            out << " font-weight=\"" << font_weight_ << "\"";
         }
         out << ">";
         out << data_;
@@ -169,7 +169,7 @@ namespace svg {
         objects_.emplace_back(std::move(object));
     }
 
-    void Document::Render(std::ofstream& out) const {
+    void Document::Render(std::ostream& out) const {
         out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
         out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv << std::endl;
         RenderContext context(out, 2, 2);

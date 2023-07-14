@@ -7,55 +7,37 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
-#include "geo.h"
+#include <set>
+#include "domain.h"
 
 namespace transportcatalogue {
 
 	using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::pair<std::string, int>>>;
 
-	namespace input {
-		struct Stop {
-			std::string name;
-			geo::Coordinates coordinates;
-			std::vector<std::pair<std::string, int>> distances;
-		};
-
-		struct Bus {
-			std::string name;
-			std::vector<std::string> stops;
-			bool IsCircle;
-		};
-	}
-
-	namespace stat_read {
-		struct Bus {
-			std::string name;
-			int stops;
-			size_t unique_stops;
-			double length;
-			double curvature;
-			bool isFound;
-		};
-
-		struct Stop {
-			std::string name;
-			std::vector<std::string_view> buses;
-			bool isFound;
-		};
-	}
-
 	class TransportCatalogue {
 	public:
 
-		void AddStop(const input::Stop& stop);
+		void AddStop(const json_reader::input::Stop& stop);
 
-		void AddBus(const input::Bus& bus);
+		void AddBus(const json_reader::input::Bus& bus);
 
 		void ProcessDistances();
 
-		stat_read::Bus GetBusInfo(std::string& name);
+		json_reader::stat_read::Bus GetBusInfo(std::string& name) const;
 
-		stat_read::Stop GetStopInfo(std::string& name);
+		json_reader::stat_read::Stop GetStopInfo(std::string& name) const;
+
+		std::vector<std::string_view> GetDrawableBuses() const;
+
+		std::vector<geo::Coordinates> GetStopsCoordinates(std::string_view bus_name) const;
+
+		bool IsRoundtrip(std::string& name) const;
+
+		size_t GetUniqueStopCount(std::string& name) const;
+
+		std::vector<std::string_view> GetStopNames(std::string& bus_name) const;
+
+		std::string_view GetLastStopName(std::string& bus_name) const;
 
 	private:
 
@@ -88,11 +70,11 @@ namespace transportcatalogue {
 		StopsDistance stops_to_distance;
 		DistancesForStops distances;
 
-		Stop* GetStop(const std::string& name);
+		Stop* GetStop(const std::string& name) const;
 
-		Bus* GetBus(const std::string& name);
+		Bus* GetBus(const std::string& name) const;
 
-		std::pair<double, double> ComputeRouteLength(std::string& name);
+		std::pair<double, double> ComputeRouteLength(std::string& name) const;
 
 	};
 }

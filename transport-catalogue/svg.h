@@ -9,10 +9,11 @@
 #include <string>
 #include <optional>
 #include <variant>
+#include "domain.h"
 
 namespace svg {
 
-    struct Rgb {
+    /*struct Rgb {
         Rgb() = default;
 
         Rgb(uint8_t rd, uint8_t grn, uint8_t bl);
@@ -33,10 +34,6 @@ namespace svg {
         double opacity = 1.0;
     };
 
-    using Color = std::variant<std::monostate, std::string, svg::Rgb, svg::Rgba>;
-
-    inline const Color NoneColor{ "none" };
-
     struct Point {
         Point() = default;
         Point(double x, double y)
@@ -45,7 +42,7 @@ namespace svg {
         }
         double x = 0;
         double y = 0;
-    };
+    };*/
 
     enum class StrokeLineCap {
         BUTT,
@@ -119,11 +116,11 @@ namespace svg {
      * Хранит ссылку на поток вывода, текущее значение и шаг отступа при выводе элемента
      */
     struct RenderContext {
-        RenderContext(std::ofstream& out)
+        RenderContext(std::ostream& out)
             : out(out) {
         }
 
-        RenderContext(std::ofstream& out, int indent_step, int indent = 0)
+        RenderContext(std::ostream& out, int indent_step, int indent = 0)
             : out(out)
             , indent_step(indent_step)
             , indent(indent) {
@@ -139,7 +136,7 @@ namespace svg {
             }
         }
 
-        std::ofstream& out;
+        std::ostream& out;
         int indent_step = 0;
         int indent = 0;
     };
@@ -219,19 +216,19 @@ namespace svg {
             using namespace std::literals;
 
             if (fill_color_) {
-                out << "fill=\""sv << *fill_color_ << "\" "sv;
+                out << " fill=\""sv << *fill_color_ << "\""sv;
             }
             if (stroke_color_) {
-                out << "stroke=\""sv << *stroke_color_ << "\" "sv;
+                out << " stroke=\""sv << *stroke_color_ << "\""sv;
             }
             if (width_) {
-                out << "stroke-width=\""sv << *width_ << "\" "sv;
+                out << " stroke-width=\""sv << *width_ << "\""sv;
             }
             if (line_cap_) {
-                out << "stroke-linecap=\""sv << *line_cap_ << "\" "sv;
+                out << " stroke-linecap=\""sv << *line_cap_ << "\""sv;
             }
             if (line_join_) {
-                out << "stroke-linejoin=\""sv << *line_join_ << "\" "sv;
+                out << " stroke-linejoin=\""sv << *line_join_ << "\""sv;
             }
         }
 
@@ -334,7 +331,7 @@ namespace svg {
         void AddPtr(std::unique_ptr<Object>&& obj) override;
 
         // Выводит в ostream svg-представление документа
-        void Render(std::ofstream& out) const;
+        void Render(std::ostream& out) const;
 
         // Прочие методы и данные, необходимые для реализации класса Document
 
