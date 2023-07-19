@@ -5,15 +5,68 @@ RequestHandler::RequestHandler(const transportcatalogue::TransportCatalogue& db,
 	renderer_(renderer) {}
 
 json::Document RequestHandler::ProcessRequests(std::vector< transportcatalogue::json_reader::stat_read::Request>& requests) {
+	json::Builder builder;
+	builder.StartArray();
+	for (auto& request : requests) {
+		std::string not_found = "not found";
+		builder.StartDict().Key("request_id").Value(request.id_);
+		switch (request.type_) {
+		case transportcatalogue::json_reader::RequestType::BUS: {
+			auto bus = db_.GetBusInfo(request.text_);
+			if (!bus.isFound) {
+				builder.Key("error_message").Value(not_found);
+			}
+			else {
+				builder.Key("curvature").Value(bus.curvature)
+					.Key("route_length").Value(bus.length)
+					.Key("stop_count").Value(bus.stops)
+					.Key("unique_stop_count").Value(static_cast<int>(bus.unique_stops));
+			}
+			builder.EndDict();
+			continue;
+		}
+		case transportcatalogue::json_reader::RequestType::STOP: {
+			auto stop = db_.GetStopInfo(request.text_);
+			if (!stop.isFound) {
+				builder.Key("error_message").Value(not_found);
+			}
+			else {
+				json::Array buses;
+				builder.Key("buses").StartArray();
+				for (auto& bus : stop.buses) {
+					std::string name(bus);
+					builder.Value(name);
+					buses.push_back(json::Node(name));
+				}
+				builder.EndArray();
+			}
+			builder.EndDict();
+			continue;
+		}
+		case transportcatalogue::json_reader::RequestType::MAP:
+			auto map_res = RenderMap();
+			std::ostringstream str;
+			map_res.Render(str);
+			builder.Key("map").Value(str.str());
+			builder.EndDict();
+		}
+	}
+	builder.EndArray();
+	json::Document doc(builder.Build().AsArray());
+	return doc;
+}
+
+json::Document RequestHandler::ProcessRequestsNoBuilder(std::vector< transportcatalogue::json_reader::stat_read::Request>& requests) {
 	json::Array reply;
 	for (auto& request : requests) {
+		std::string not_found = "not found";
 		json::Dict res;
 		res["request_id"] = json::Node(request.id_);
 		switch (request.type_) {
 		case transportcatalogue::json_reader::RequestType::BUS: {
 			auto bus = db_.GetBusInfo(request.text_);
 			if (!bus.isFound) {
-				res["error_message"] = json::Node("not found");
+				res["error_message"] = json::Node(not_found);
 			}
 			else {
 				res["curvature"] = json::Node(bus.curvature);
@@ -27,7 +80,7 @@ json::Document RequestHandler::ProcessRequests(std::vector< transportcatalogue::
 		case transportcatalogue::json_reader::RequestType::STOP: {
 			auto stop = db_.GetStopInfo(request.text_);
 			if (!stop.isFound) {
-				res["error_message"] = json::Node("not found");
+				res["error_message"] = json::Node(not_found);
 			}
 			else {
 				json::Array buses;

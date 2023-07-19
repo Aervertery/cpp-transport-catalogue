@@ -375,7 +375,14 @@ namespace json {
 
     // ------------------- Node -------------------------
 
-    const Value& Node::GetValue() const {
+    Node::Node(NodeValue value) :
+        NodeValue(std::move(value)) {}
+
+    const NodeValue& Node::GetValue() const {
+        return *this;
+    }
+
+    NodeValue& Node::GetValue() {
         return *this;
     }
 
@@ -407,7 +414,7 @@ namespace json {
         return std::holds_alternative<Array>(*this);
     }
 
-    bool Node::IsMap() const {
+    bool Node::IsDict() const {
         return std::holds_alternative<Dict>(*this);
     }
 
@@ -449,8 +456,8 @@ namespace json {
         return std::get<Array>(*this);
     }
 
-    const Dict& Node::AsMap() const {
-        if (!IsMap()) {
+    const Dict& Node::AsDict() const {
+        if (!IsDict()) {
             throw std::logic_error("Invalid type: expected map");
         }
         return std::get<Dict>(*this);
@@ -498,70 +505,48 @@ namespace json {
         ctx.out << std::boolalpha << b << std::noboolalpha;
     }
 
-    void PrintValue(const Array& array, const PrintContext& ctx) {
-        bool check_first = true;
-        ctx.out << "["sv;
-        auto it = array.begin();
-        auto r = *it;
-        if (r.IsArray() || r.IsMap()) {
-            ctx.out << std::endl;
-            ctx.PrintIndent();
-        }
-        for (auto& elem : array) {
-            if (check_first) {
-                if (r.IsArray() || r.IsMap()) {
-                    ctx.PrintIndent();
-                    PrintNode(elem, ctx.Indented());
-                }
-                else {
-                    PrintNode(elem, ctx);
-                }
-                check_first = false;
-                continue;
-            }
-            ctx.out << ", "sv;
-            if (r.IsArray() || r.IsMap()) {
-                ctx.out << std::endl;
-                ctx.Indented().PrintIndent();
-                PrintNode(elem, ctx.Indented());
+    template <>
+    void PrintValue<Array>(const Array& nodes, const PrintContext& ctx) {
+        std::ostream& out = ctx.out;
+        out << "[\n"sv;
+        bool first = true;
+        auto inner_ctx = ctx.Indented();
+        for (const Node& node : nodes) {
+            if (first) {
+                first = false;
             }
             else {
-                PrintNode(elem, ctx);
+                out << ",\n"sv;
             }
+            inner_ctx.PrintIndent();
+            PrintNode(node, inner_ctx);
         }
-        if (r.IsArray() || r.IsMap()) {
-            ctx.out << std::endl;
-            ctx.PrintIndent();
-        }
-        ctx.out << "]"sv;
+        out.put('\n');
+        ctx.PrintIndent();
+        out.put(']');
     }
 
-    void PrintValue(const Dict& dict, const PrintContext& ctx) {
-        bool check_first = true;
-        ctx.out << "{"sv;
-        if (dict.size() > 1) {
-            ctx.out << std::endl;
-            ctx.Indented().PrintIndent();
-        }
-        for (auto& elem : dict) {
-            if (check_first) {
-                check_first = false;
-                PrintNode(elem.first, ctx);
-                ctx.out << ": "sv;
-                PrintNode(elem.second, ctx.Indented());
-                continue;
+    template <>
+    void PrintValue<Dict>(const Dict& nodes, const PrintContext& ctx) {
+        std::ostream& out = ctx.out;
+        out << "{\n"sv;
+        bool first = true;
+        auto inner_ctx = ctx.Indented();
+        for (const auto& elem : nodes) {
+            if (first) {
+                first = false;
             }
-            ctx.out << ", "sv << std::endl;
-            ctx.Indented().PrintIndent();
+            else {
+                out << ",\n"sv;
+            }
+            inner_ctx.PrintIndent();
             PrintNode(elem.first, ctx);
-            ctx.out << ": "sv;
-            PrintNode(elem.second, ctx.Indented());
+            out << ": "sv;
+            PrintNode(elem.second, inner_ctx);
         }
-        if (dict.size() > 1) {
-            ctx.out << std::endl;
-            ctx.PrintIndent();
-        }
-        ctx.out << "}"sv;
+        out.put('\n');
+        ctx.PrintIndent();
+        out.put('}');
     }
 
     void PrintNode(const Node& node, const PrintContext& ctx) {

@@ -21,13 +21,17 @@ namespace json {
         using runtime_error::runtime_error;
     };
 
-    using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+    using NodeValue = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
 
-    class Node : Value {
+    class Node : NodeValue {
     public:
-        const Value& GetValue() const;
-
         using variant::variant;
+
+        Node(NodeValue value);
+
+        const NodeValue& GetValue() const;
+
+        NodeValue& GetValue();
 
         bool IsInt() const;
         bool IsDouble() const;
@@ -36,14 +40,14 @@ namespace json {
         bool IsString() const;
         bool IsNull() const;
         bool IsArray() const;
-        bool IsMap() const;
+        bool IsDict() const;
 
         int AsInt() const;
         bool AsBool() const;
         double AsDouble() const;
         const std::string& AsString() const;
         const Array& AsArray() const;
-        const Dict& AsMap() const;
+        const Dict& AsDict() const;
 
         bool operator==(const Node& other) const;
         bool operator!=(const Node& other) const;
@@ -62,7 +66,7 @@ namespace json {
 
     struct PrintContext {
         std::ostream& out;
-        int indent_step = 2;
+        int indent_step = 4;
         int indent = 0;
 
         void PrintIndent() const {
@@ -87,10 +91,6 @@ namespace json {
     void PrintValue(const std::string& string, const PrintContext& ctx);
 
     void PrintValue(const bool b, const PrintContext& ctx);
-
-    void PrintValue(const Array& array, const PrintContext& ctx);
-
-    void PrintValue(const Dict& dict, const PrintContext& ctx);
 
     void PrintNode(const Node& node, const PrintContext& ctx);
 

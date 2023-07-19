@@ -1,5 +1,6 @@
 #pragma once
 #include "transport_catalogue.h"
+#include "json_builder.h"
 #include "map_renderer.h"
 #include "json_reader.h"
 
@@ -10,6 +11,8 @@ public:
     svg::Document RenderMap() const;
 
     json::Document ProcessRequests(std::vector< transportcatalogue::json_reader::stat_read::Request>& requests);
+
+    json::Document ProcessRequestsNoBuilder(std::vector< transportcatalogue::json_reader::stat_read::Request>& requests);
 
 private:
     const transportcatalogue::TransportCatalogue& db_;

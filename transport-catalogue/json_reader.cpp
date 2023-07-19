@@ -16,9 +16,9 @@ namespace transportcatalogue {
 			}
 
 			void Requests::LoadRequests(json::Document& document) {
-				json::Array input_base = document.GetRoot().AsMap().at("base_requests").AsArray();
+				json::Array input_base = document.GetRoot().AsDict().at("base_requests").AsArray();
 				for (const auto& element : input_base) {
-					json::Dict elem = element.AsMap();
+					json::Dict elem = element.AsDict();
 					if (elem.at("type").AsString() == "Stop") {
 						AddRequest(RequestType::STOP, std::move(AddStop(elem)));
 					}
@@ -29,7 +29,7 @@ namespace transportcatalogue {
 			}
 
 			RenderSettings Requests::LoadSettings(json::Document& document) {
-				json::Dict input_render = document.GetRoot().AsMap().at("render_settings").AsMap();
+				json::Dict input_render = document.GetRoot().AsDict().at("render_settings").AsDict();
 				double width = input_render.at("width").AsDouble();
 				double height = input_render.at("height").AsDouble();
 				double padding = input_render.at("padding").AsDouble();
@@ -95,8 +95,8 @@ namespace transportcatalogue {
 				std::string name = stop_info.at("name").AsString();
 				geo::Coordinates coords = { stop_info.at("latitude").AsDouble(), stop_info.at("longitude").AsDouble() };
 				std::vector<std::pair<std::string, int>> distances;
-				if (!stop_info.at("road_distances").AsMap().empty()) {
-					for (auto& elem : stop_info.at("road_distances").AsMap()) {
+				if (!stop_info.at("road_distances").AsDict().empty()) {
+					for (auto& elem : stop_info.at("road_distances").AsDict()) {
 						distances.push_back({ elem.first, elem.second.AsInt() });
 					}
 				}
@@ -160,9 +160,9 @@ namespace transportcatalogue {
 			}
 
 			void Requests::Load(json::Document& document) {
-				json::Array outp = document.GetRoot().AsMap().at("stat_requests").AsArray();
+				json::Array outp = document.GetRoot().AsDict().at("stat_requests").AsArray();
 				for (const auto& element : outp) {
-					json::Dict elem = element.AsMap();
+					json::Dict elem = element.AsDict();
 					std::string name;
 					int id = elem.at("id").AsInt();
 					if (elem.at("type").AsString() == "Stop") {
