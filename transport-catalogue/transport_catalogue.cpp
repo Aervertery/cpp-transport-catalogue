@@ -3,7 +3,7 @@ namespace transportcatalogue {
 	using BusStops = std::pair<std::vector<std::string>, bool>;
 
 	void TransportCatalogue::AddStop(const json_reader::input::Stop& stop) {
-		stops.push_back({ stop.name_, stop.coordinates_ });
+		stops.push_back({ stop.name_, stop.coordinates_, stops.size()});
 		stopname_to_stop[stops.back().name] = &stops.back();
 		distances[stops.back().name] = stop.distances_;
 	}
@@ -13,7 +13,7 @@ namespace transportcatalogue {
 		for (const auto& elem : bus.stops_) {
 			stops.push_back(GetStop(elem));
 		}
-		buses.push_back({ bus.name_, stops, bus.IsCircle_ });
+		buses.push_back({ bus.name_, stops, bus.IsCircle_, buses.size() });
 		busname_to_bus[buses.back().name] = &buses.back();
 	}
 
@@ -25,12 +25,12 @@ namespace transportcatalogue {
 		return busname_to_bus.find(name)->second;
 	}
 
-	json_reader::stat_read::Stop TransportCatalogue::GetStopInfo(std::string& name) const {
-		json_reader::stat_read::Bus rep1;
+	json_reader::stat_read::StopInfo TransportCatalogue::GetStopInfo(std::string& name) const {
+		json_reader::stat_read::BusInfo rep1;
 		auto res = stopname_to_stop.find(name);
 		std::vector<std::string_view> result;
 		if (res == stopname_to_stop.end()) {
-			json_reader::stat_read::Stop rep2 = { name, result, false };
+			json_reader::stat_read::StopInfo rep2 = { name, result, false };
 			return rep2;
 		}
 		std::string name_ = res->second->name;
@@ -45,22 +45,22 @@ namespace transportcatalogue {
 			}
 		}
 		std::sort(result.begin(), result.end());
-		json_reader::stat_read::Stop rep2 = { name, result, true };
+		json_reader::stat_read::StopInfo rep2 = { name, result, true };
 		return rep2;
 	}
 
-	json_reader::stat_read::Bus TransportCatalogue::GetBusInfo(std::string& name) const {
-		json_reader::stat_read::Stop rep2;
+	json_reader::stat_read::BusInfo TransportCatalogue::GetBusInfo(std::string& name) const {
+		json_reader::stat_read::StopInfo rep2;
 		auto res = busname_to_bus.find(name);
 		if (res == busname_to_bus.end()) {
-			json_reader::stat_read::Bus rep1 = { name, 0, 0, 0.0, 0.0, false };
+			json_reader::stat_read::BusInfo rep1 = { name, 0, 0, 0.0, 0.0, false };
 			return rep1;
 		}
 		std::string name_ = res->second->name;
 		int stops = res->second->stops.size();
 		size_t uniques = GetUniqueStopCount(res->second->name);
 		std::pair<double, double> length = ComputeRouteLength(name_);
-		json_reader::stat_read::Bus rep1 = { name, stops, uniques, length.first, length.second, true };
+		json_reader::stat_read::BusInfo rep1 = { name, stops, uniques, length.first, length.second, true };
 		return rep1;
 	}
 
@@ -94,7 +94,22 @@ namespace transportcatalogue {
 		return uniques.size();
 	}
 
+	size_t TransportCatalogue::GetStopCount() const {
+		return stops.size();
+	}
+
 	std::vector<std::string_view> TransportCatalogue::GetStopNames(std::string& bus_name) const {
+		std::vector<std::string_view> uniques;
+		size_t count = busname_to_bus.at(bus_name)->stops.size();
+		size_t c = 0;
+		while (c != count) {
+			uniques.push_back(busname_to_bus.at(bus_name)->stops[c]->name);
+			++c;
+		}
+		return uniques;
+	}
+
+	std::vector<std::string_view> TransportCatalogue::GetStopNames(std::string_view bus_name) const {
 		std::vector<std::string_view> uniques;
 		size_t count = busname_to_bus.at(bus_name)->stops.size();
 		size_t c = 0;
@@ -109,6 +124,33 @@ namespace transportcatalogue {
 		auto it = busname_to_bus.at(bus_name)->stops.rbegin();
 		auto r = *it;
 		return r->name;
+	}
+
+	int TransportCatalogue::GetDistance(std::string& first, std::string& second_) const {
+		auto t = distances.find(first)->second;
+		auto s = std::find_if(t.begin(), t.end(), [=](const auto& elem) 
+							{ return elem.first == second_; });
+		if (t.size() == 0 || s == t.end()) {
+			t = distances.find(second_)->second;
+			auto s = std::find_if(t.begin(), t.end(), [=](const auto& elem)
+				{ return elem.first == first; });
+			auto res = s->second;
+			return res;
+		}
+		auto res = s->second;
+		return res;
+	}
+
+	std::string_view TransportCatalogue::GetStopNameById(int id) const {
+		return stops.at(id).name;
+	}
+
+	int TransportCatalogue::GetBusIdByName(std::string_view name) const {
+		return busname_to_bus.at(name)->id_;
+	}
+
+	int TransportCatalogue::GetStopIdByName(std::string& stop_name) const {
+		return stopname_to_stop.at(stop_name)->id_;
 	}
 
 	//length, curvature

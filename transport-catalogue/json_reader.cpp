@@ -28,7 +28,7 @@ namespace transportcatalogue {
 				}
 			}
 
-			RenderSettings Requests::LoadSettings(json::Document& document) {
+			RenderSettings Requests::LoadRenderSettings(json::Document& document) {
 				json::Dict input_render = document.GetRoot().AsDict().at("render_settings").AsDict();
 				double width = input_render.at("width").AsDouble();
 				double height = input_render.at("height").AsDouble();
@@ -82,8 +82,17 @@ namespace transportcatalogue {
 						}
 					}
 				}
-				RenderSettings settings{ width, height, padding, line_width, stop_radius, bus_label_font_size, bus_label_offset, stop_label_font_size, stop_label_offset,
-										underlayer_color, underlayer_width, color_palette };
+				RenderSettings settings{ width, height, padding, line_width, stop_radius,
+										bus_label_font_size, bus_label_offset, stop_label_font_size, 
+										stop_label_offset,	underlayer_color, underlayer_width, color_palette };
+				return settings;
+			}
+
+			RoutingSettings Requests::LoadRoutingSettings(json::Document& document) {
+				json::Dict input_routing = document.GetRoot().AsDict().at("routing_settings").AsDict();
+				int wait_time = input_routing.at("bus_wait_time").AsInt();
+				double velocity = input_routing.at("bus_velocity").AsDouble();
+				RoutingSettings settings{ wait_time, velocity };
 				return settings;
 			}
 
@@ -143,6 +152,8 @@ namespace transportcatalogue {
 						continue;
 					case RequestType::MAP:
 						continue;
+					case RequestType::ROUTING:
+						continue;
 					}
 				}
 			}
@@ -150,7 +161,7 @@ namespace transportcatalogue {
 
 		namespace stat_read {
 
-			Request::Request(RequestType type, std::string& text, int id) :
+			Request::Request(RequestType type, RequestText& text, int id) :
 				type_(type),
 				text_(text),
 				id_(id) {}
@@ -163,24 +174,52 @@ namespace transportcatalogue {
 				json::Array outp = document.GetRoot().AsDict().at("stat_requests").AsArray();
 				for (const auto& element : outp) {
 					json::Dict elem = element.AsDict();
-					std::string name;
+					RequestText name;
 					int id = elem.at("id").AsInt();
 					if (elem.at("type").AsString() == "Stop") {
 						name = elem.at("name").AsString();
 						AddRequest(RequestType::STOP, name, id);
 					}
 					else if (elem.at("type").AsString() == "Bus") {
-						std::string name = elem.at("name").AsString();
+						name = elem.at("name").AsString();
 						AddRequest(RequestType::BUS, name, id);
 					}
 					else if (elem.at("type").AsString() == "Map") {
 						AddRequest(RequestType::MAP, name, id);
 					}
+					else if (elem.at("type").AsString() == "Route") {
+						std::string from = elem.at("from").AsString();
+						std::string to = elem.at("to").AsString();
+						RequestText text = std::make_pair(from, to);
+						AddRequest(RequestType::ROUTING, text, id);
+					}
 				}
 			}
 
-			void Requests::AddRequest(RequestType type, std::string& name, int id) {
-				requests.push_back({ type, name, id });
+			void Requests::AddRequest(RequestType type, RequestText& text, int id) {
+				requests.push_back({ type, text, id });
+			}
+			
+			bool Request::IsString() const {
+				return std::holds_alternative<std::string>(this->text_);
+			}
+
+			bool Request::IsPair() const {
+				return std::holds_alternative <std::pair<std::string, std::string>>(this->text_);
+			}
+
+			std::pair<std::string, std::string> Request::AsPair() const {
+				if (!IsPair()) {
+					throw std::logic_error("expected pair");
+				}
+				return std::get<std::pair<std::string, std::string>>(this->text_);
+			}
+
+			std::string Request::AsString() const {
+				if (!IsString()) {
+					throw std::logic_error("expected string");
+				}
+				return std::get<std::string>(this->text_);
 			}
 		} //namespace stat_read
 	} //namespace json_reader

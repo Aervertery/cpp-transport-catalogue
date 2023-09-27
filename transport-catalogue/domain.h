@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <stdexcept>
 #include "geo.h"
 
 namespace svg {
@@ -77,10 +78,15 @@ namespace transportcatalogue {
 				double underlayer_width_;
 				std::vector<svg::Color> color_palette_;
 			};
+
+			struct RoutingSettings {
+				int wait_time_;
+				double velocity_;
+			};
 		} //namespace input
 
 		namespace stat_read {
-			struct Bus {
+			struct BusInfo {
 				std::string name;
 				int stops;
 				size_t unique_stops;
@@ -89,7 +95,7 @@ namespace transportcatalogue {
 				bool isFound;
 			};
 
-			struct Stop {
+			struct StopInfo {
 				std::string name;
 				std::vector<std::string_view> buses;
 				bool isFound;

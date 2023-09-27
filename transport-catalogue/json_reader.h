@@ -1,6 +1,7 @@
 #pragma once
 #include "transport_catalogue.h"
 #include "json.h"
+#include <variant>
 
 namespace transportcatalogue {
 	namespace json_reader {
@@ -9,6 +10,7 @@ namespace transportcatalogue {
 			BUS,
 			STOP,
 			MAP,
+			ROUTING,
 		};
 		namespace input {
 			using BusStops = std::pair<std::vector<std::string>, bool>;
@@ -32,7 +34,9 @@ namespace transportcatalogue {
 
 				void LoadRequests(json::Document& document);
 
-				RenderSettings LoadSettings(json::Document& document);
+				RenderSettings LoadRenderSettings(json::Document& document);
+
+				RoutingSettings LoadRoutingSettings(json::Document& document);
 
 				void ProcessRequests(TransportCatalogue& catalogue);
 
@@ -46,20 +50,28 @@ namespace transportcatalogue {
 		} //namespace input
 
 		namespace stat_read {
-
+			using RequestText = std::variant<std::string, std::pair<std::string, std::string>>;
 			struct Request {
-				Request(RequestType type, std::string& text, int id);
+				Request(RequestType type, RequestText& text, int id);
 
 				RequestType type_;
-				std::string text_;
+				RequestText text_;
 				int id_;
+
+				bool IsString() const;
+
+				bool IsPair() const;
+
+				std::pair<std::string, std::string> AsPair() const;
+
+				std::string AsString() const;
 			};
 
 			class Requests {
 			public:
 				std::vector<Request>& GetRequests();
 
-				void AddRequest(RequestType type, std::string& name, int id);
+				void AddRequest(RequestType type, RequestText& name, int id);
 
 				void Load(json::Document& document);
 

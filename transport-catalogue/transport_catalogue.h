@@ -15,41 +15,17 @@ namespace transportcatalogue {
 	using DistancesForStops = std::unordered_map<std::string_view, std::vector<std::pair<std::string, int>>>;
 
 	class TransportCatalogue {
-	public:
-
-		void AddStop(const json_reader::input::Stop& stop);
-
-		void AddBus(const json_reader::input::Bus& bus);
-
-		void ProcessDistances();
-
-		json_reader::stat_read::Bus GetBusInfo(std::string& name) const;
-
-		json_reader::stat_read::Stop GetStopInfo(std::string& name) const;
-
-		std::set<std::string_view> GetDrawableBuses() const;
-
-		std::vector<geo::Coordinates> GetStopsCoordinates(std::string_view bus_name) const;
-
-		bool IsRoundtrip(std::string& name) const;
-
-		size_t GetUniqueStopCount(std::string& name) const;
-
-		std::vector<std::string_view> GetStopNames(std::string& bus_name) const;
-
-		std::string_view GetLastStopName(std::string& bus_name) const;
-
-	private:
-
 		struct Stop {
 			std::string name;
 			geo::Coordinates coordinates;
+			size_t id_;
 		};
 
 		struct Bus {
 			std::string name;
 			std::vector<Stop*> stops;
 			bool IsCircle;
+			size_t id_;
 		};
 
 
@@ -69,6 +45,43 @@ namespace transportcatalogue {
 		std::unordered_map<std::string_view, Bus*> busname_to_bus;
 		StopsDistance stops_to_distance;
 		DistancesForStops distances;
+	public:
+
+		void AddStop(const json_reader::input::Stop& stop);
+
+		void AddBus(const json_reader::input::Bus& bus);
+
+		void ProcessDistances();
+
+		json_reader::stat_read::BusInfo GetBusInfo(std::string& name) const;
+
+		json_reader::stat_read::StopInfo GetStopInfo(std::string& name) const;
+
+		std::set<std::string_view> GetDrawableBuses() const;
+
+		std::vector<geo::Coordinates> GetStopsCoordinates(std::string_view bus_name) const;
+
+		bool IsRoundtrip(std::string& name) const;
+
+		size_t GetUniqueStopCount(std::string& name) const;
+
+		size_t GetStopCount() const;
+
+		std::vector<std::string_view> GetStopNames(std::string& bus_name) const;
+
+		std::vector<std::string_view> GetStopNames(std::string_view bus_name) const;
+
+		std::string_view GetLastStopName(std::string& bus_name) const;
+
+		std::string_view GetStopNameById(int id) const;
+
+		int GetBusIdByName(std::string_view name) const;
+
+		int GetStopIdByName(std::string& stop_name) const;
+
+		int GetDistance(std::string& first, std::string& second) const;
+
+	private:
 
 		Stop* GetStop(const std::string& name) const;
 
