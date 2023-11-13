@@ -153,6 +153,41 @@ namespace transportcatalogue {
 		return stopname_to_stop.at(stop_name)->id_;
 	}
 
+	transportcatalogue::json_reader::input::Stop TransportCatalogue::PrepareStop(std::string_view stop_name) const {
+		auto stop = GetStop(std::string(stop_name));
+		return { stop->name, stop->coordinates, distances.at(stop_name) };
+	}
+
+	transportcatalogue::json_reader::input::Bus TransportCatalogue::PrepareBus(std::string_view bus_name) const	{
+		auto bus = GetBus(std::string(bus_name));
+		std::vector<std::string> stops;
+		for (const auto& name : GetStopNames(bus_name)) {
+			stops.push_back(std::string(name));
+		}
+		return { bus->name, stops, bus->IsCircle };
+	}
+
+
+
+	const std::vector<transportcatalogue::json_reader::input::Stop> TransportCatalogue::WrapStops() const {
+		std::vector<transportcatalogue::json_reader::input::Stop> res;
+		for (int i = 0; i < GetStopCount(); ++i) {
+			auto stop_name = GetStopNameById(i);
+			auto stop = PrepareStop(stop_name);
+			res.push_back(stop);
+		}
+		return res;
+	}
+
+	const std::vector<transportcatalogue::json_reader::input::Bus> TransportCatalogue::WrapBuses(std::set<std::string_view>& bus_names) const {
+		std::vector<transportcatalogue::json_reader::input::Bus> res;
+		for (const auto bus_name : bus_names) {
+			auto bus = PrepareBus(bus_name);
+			res.push_back(bus);
+		}
+		return res;
+	}
+
 	//length, curvature
 	std::pair<double, double> TransportCatalogue::ComputeRouteLength(std::string& name) const {
 		Bus* bus = GetBus(name);

@@ -96,6 +96,10 @@ namespace transportcatalogue {
 				return settings;
 			}
 
+			SerializationSettings Requests::LoadSerializationSettings(json::Document& document) {
+				return { document.GetRoot().AsDict().at("serialization_settings").AsDict().at("file").AsString() };
+			}
+
 			void Requests::AddRequest(RequestType type, std::variant<Stop, Bus>&& object) {
 				requests.push_back({ type, std::move(object) });
 			}
@@ -171,6 +175,7 @@ namespace transportcatalogue {
 			}
 
 			void Requests::Load(json::Document& document) {
+				auto t = document.GetRoot().AsDict();
 				json::Array outp = document.GetRoot().AsDict().at("stat_requests").AsArray();
 				for (const auto& element : outp) {
 					json::Dict elem = element.AsDict();
@@ -194,6 +199,10 @@ namespace transportcatalogue {
 						AddRequest(RequestType::ROUTING, text, id);
 					}
 				}
+			}
+
+			transportcatalogue::json_reader::input::SerializationSettings Requests::LoadSerializationSettings(json::Document& document) {
+				return { document.GetRoot().AsDict().at("serialization_settings").AsDict().at("file").AsString() };
 			}
 
 			void Requests::AddRequest(RequestType type, RequestText& text, int id) {

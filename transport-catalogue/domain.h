@@ -83,6 +83,10 @@ namespace transportcatalogue {
 				int wait_time_;
 				double velocity_;
 			};
+
+			struct SerializationSettings {
+				std::string file_name_;
+			};
 		} //namespace input
 
 		namespace stat_read {

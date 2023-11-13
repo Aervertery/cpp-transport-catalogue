@@ -42,7 +42,11 @@ namespace renderer {
     public:
         MapRenderer(transportcatalogue::json_reader::input::RenderSettings settings);
 
+        MapRenderer();
+
         const transportcatalogue::json_reader::input::RenderSettings& GetSettings() const;
+
+        void SetSettings(transportcatalogue::json_reader::input::RenderSettings settings);
 
         svg::Circle DrawStopMark(ObjectData& data) const;
 
@@ -55,7 +59,7 @@ namespace renderer {
         svg::Text DrawBusNameUnderlayer(ObjectData& data) const;
 
     private:
-        const transportcatalogue::json_reader::input::RenderSettings settings_;
+        transportcatalogue::json_reader::input::RenderSettings settings_;
     };
 
     template <typename PointInputIt>

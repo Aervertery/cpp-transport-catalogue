@@ -81,11 +81,19 @@ namespace transportcatalogue {
 
 		int GetDistance(std::string& first, std::string& second) const;
 
+		const std::vector<transportcatalogue::json_reader::input::Stop> WrapStops() const;
+
+		const std::vector<transportcatalogue::json_reader::input::Bus> WrapBuses(std::set<std::string_view>& bus_names) const;
+
 	private:
 
 		Stop* GetStop(const std::string& name) const;
 
 		Bus* GetBus(const std::string& name) const;
+
+		transportcatalogue::json_reader::input::Stop PrepareStop(std::string_view stop_name) const;
+
+		transportcatalogue::json_reader::input::Bus PrepareBus(std::string_view bus_name) const;
 
 		std::pair<double, double> ComputeRouteLength(std::string& name) const;
 

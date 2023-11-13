@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package transport_catalogue_serialize;
+
+import "graph.proto";
+
+message RoutingSettings {
+	int32 wait_time = 1;
+	double velocity = 2;
+}
+
+message Router {
+	repeated Edge graph = 1;
+	map<uint32, Item> items = 2;	
+	RoutingSettings settings = 3;
+}

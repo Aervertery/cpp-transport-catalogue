@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package transport_catalogue_serialize;
+
+message Edge {
+	uint32 from = 1;
+	uint32 to = 2;
+	double weight = 3;
+	uint32 id = 4;
+}
+
+message Item {
+	string bus_name = 1;
+	uint32 bus_id = 2;
+	uint32 span_count = 3;
+}

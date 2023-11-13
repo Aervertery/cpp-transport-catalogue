@@ -9,8 +9,14 @@ namespace renderer {
 	MapRenderer::MapRenderer(transportcatalogue::json_reader::input::RenderSettings settings) :
 		settings_(std::move(settings)) {}
 
+	MapRenderer::MapRenderer() {}
+
 	const transportcatalogue::json_reader::input::RenderSettings& MapRenderer::GetSettings() const {
 		return settings_;
+	}
+
+	void MapRenderer::SetSettings(transportcatalogue::json_reader::input::RenderSettings settings) {
+		settings_ = settings;
 	}
 
 	bool IsZero(double value) {

@@ -38,6 +38,8 @@ namespace transportcatalogue {
 
 				RoutingSettings LoadRoutingSettings(json::Document& document);
 
+				SerializationSettings LoadSerializationSettings(json::Document& document);
+
 				void ProcessRequests(TransportCatalogue& catalogue);
 
 			private:
@@ -74,6 +76,8 @@ namespace transportcatalogue {
 				void AddRequest(RequestType type, RequestText& name, int id);
 
 				void Load(json::Document& document);
+
+				transportcatalogue::json_reader::input::SerializationSettings LoadSerializationSettings(json::Document& document);
 
 			private:
 				std::vector<Request> requests;

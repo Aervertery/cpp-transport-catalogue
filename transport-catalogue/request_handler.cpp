@@ -1,12 +1,14 @@
 #include "request_handler.h"
 
-RequestHandler::RequestHandler(const transportcatalogue::TransportCatalogue& db, const renderer::MapRenderer& renderer, 
-				const transportcatalogue::transport_router::TransportRouter& router) :
+RequestHandler::RequestHandler(const transportcatalogue::TransportCatalogue& db, const renderer::MapRenderer& renderer,
+				const transportcatalogue::transport_router::TransportRouter& router, 
+				transportcatalogue::json_reader::input::SerializationSettings serialization_settings) :
 	db_(db),
 	renderer_(renderer),
-	router_(router) {}
+	router_(router),
+	serialization_settings_(serialization_settings) {}
 
-json::Document RequestHandler::ProcessRequests(std::vector< transportcatalogue::json_reader::stat_read::Request>& requests) {
+json::Document RequestHandler::ProcessRequests(std::vector<transportcatalogue::json_reader::stat_read::Request>& requests) {
 	json::Builder builder;
 	builder.StartArray();
 	for (auto& request : requests) {
@@ -88,9 +90,26 @@ json::Document RequestHandler::ProcessRequests(std::vector< transportcatalogue::
 	return doc;
 }
 
+void RequestHandler::SetSerializationSettings(transportcatalogue::json_reader::input::SerializationSettings& serialization_settings) {
+	serialization_settings_ = serialization_settings;
+}
+
+bool RequestHandler::SaveDB() const {
+	std::ofstream outp(serialization_settings_.file_name_, std::ios::binary);
+
+	if (!outp) {
+		return false;
+	}
+	transport_catalogue_serialize::TransportCatalogue tc = serialization::SaveCatalogue(db_);
+	*tc.mutable_render_settings() = serialization::SaveRenderSettings(renderer_.GetSettings());
+	*tc.mutable_router() = serialization::SaveRouter(router_);
+	tc.SerializePartialToOstream(&outp);
+	return true;
+}
+
 svg::Document RequestHandler::RenderMap() const {
 	svg::Document doc;
-	auto buses = db_.GetDrawableBuses();
+	std::set<std::string_view> buses = db_.GetDrawableBuses();
 	std::vector<transportcatalogue::geo::Coordinates> all_coords;
 	for (auto bus_name : buses) {
 		for (auto coords : db_.GetStopsCoordinates(bus_name)) {

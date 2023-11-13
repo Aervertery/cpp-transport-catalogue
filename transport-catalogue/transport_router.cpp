@@ -5,11 +5,19 @@ const double MINUTES_IN_HOUR = 60.0;
 
 namespace transportcatalogue {
 	namespace transport_router {
-		TransportRouter::TransportRouter(json_reader::input::RoutingSettings settings, TransportCatalogue& tc, size_t stop_count) :
+		TransportRouter::TransportRouter(json_reader::input::RoutingSettings settings, TransportCatalogue& tc) :
 			settings_(settings),
 			tc_(tc),
-			graph_(stop_count) {
+			graph_(tc.GetStopCount()) {
 				ConstructGraph();
+				router_ = std::make_unique<graph::Router<double>>(graph_);
+		}
+
+		TransportRouter::TransportRouter(json_reader::input::RoutingSettings settings, TransportCatalogue& tc, Graph&& graph, std::map<graph::EdgeId, Item>&& items) :
+			settings_(settings),
+			tc_(tc),
+			items_(items) {
+				graph_ = graph;
 				router_ = std::make_unique<graph::Router<double>>(graph_);
 		}
 
@@ -17,6 +25,9 @@ namespace transportcatalogue {
 			settings_.velocity_ = velocity;
 			return *this;
 		}
+
+		TransportRouter::TransportRouter(TransportCatalogue& tc) :
+			tc_(tc) {}
 
 		TransportRouter& TransportRouter::SetWaitTime(int wait_time) {
 			settings_.wait_time_ = wait_time;
@@ -43,6 +54,11 @@ namespace transportcatalogue {
 			}
 		}
 
+		json_reader::input::RoutingSettings TransportRouter::GetSettings() const
+		{
+			return settings_;
+		}
+
 		double TransportRouter::CalcTime(std::string& from, std::string& to) {
 			int length = tc_.GetDistance(from, to);
 			double velocity = METERS_IN_KM * settings_.velocity_ / MINUTES_IN_HOUR;
@@ -59,6 +75,11 @@ namespace transportcatalogue {
 
 		graph::Edge<double> TransportRouter::GetEdgeById(graph::EdgeId id) const {
 			return graph_.GetEdge(id);
+		}
+
+		size_t TransportRouter::GetEdgeCount() const
+		{
+			return graph_.GetEdgeCount();
 		}
 
 		TransportRouter::Item TransportRouter::GetItem(graph::EdgeId id) const {
